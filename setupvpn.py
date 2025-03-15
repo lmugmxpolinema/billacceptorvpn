@@ -102,7 +102,8 @@ usepeerdns
     print_log("✅ File konfigurasi VPN telah dipindahkan dan diberikan izin aman.")
     
     print_log("🔐 Mengonfigurasi UFW...")
-    run_command("sudo ufw enable")
+    run_command("sudo ufw allow 22")
+    run_command("sudo ufw reload")
     
     print_log("🕒 Menambahkan konfigurasi crontab untuk VPN...")
     cron_command = f'@reboot sudo pon vpn updetach >> {log_path}/logvpn.txt 2>&1'
