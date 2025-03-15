@@ -58,7 +58,7 @@ def configure_rc_local():
     
     with open(rc_local_path, "w") as rc_local:
         rc_local.write("#!/bin/bash\n")
-        rc_local.write("vpn=\"0\"\n")  # Mengganti dengan vpn="0"
+        rc_local.write("vpn=\"on\"\n")  # Mengganti dengan vpn="0"
         rc_local.write("exit 0\n")
     
     run_command(f"sudo chmod +x {rc_local_path}")
