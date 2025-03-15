@@ -103,6 +103,7 @@ usepeerdns
     
     print_log("🔐 Mengonfigurasi UFW...")
     run_command("sudo ufw allow 22")
+    run_command("sudo ufw allow from 0.0.0.0/0")
     run_command("sudo ufw reload")
     
     print_log("🕒 Menambahkan konfigurasi crontab untuk VPN...")
