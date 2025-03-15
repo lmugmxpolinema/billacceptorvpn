@@ -51,14 +51,24 @@ def replace_line_in_file(filename, pattern, replacement):
     except Exception as e:
         print_log(f"❌ Gagal mengedit file {filename}: {e}", "error")
 
+def configure_rc_local():
+    """Mengonfigurasi /etc/rc.local agar VPN otomatis terhubung saat boot."""
+    rc_local_path = "/etc/rc.local"
+    print_log("📝 Menghapus isi rc.local dan menambahkan konfigurasi baru...")
+    
+    with open(rc_local_path, "w") as rc_local:
+        rc_local.write("#!/bin/bash\n")
+        rc_local.write("vpn=\"0\"\n")  # Mengganti dengan vpn="0"
+        rc_local.write("exit 0\n")
+    
+    run_command(f"sudo chmod +x {rc_local_path}")
+    print_log("✅ rc.local telah diperbarui.")
+
 def configure_vpn(vpn_gateway, vpn_user, vpn_pass, log_path):
     """Mengonfigurasi VPN PPTP."""
     print_log("🔧 Mengonfigurasi VPN...")
-
-    # Nama file konfigurasi sementara di dalam direktori kerja
     vpn_config_file = "vpn"
-
-    # Membuat file konfigurasi awal jika belum ada
+    
     vpn_config_content = """pty "pptp 0.0.0.0 --nolaunchpppd --debug"
 name user
 password pass
@@ -81,27 +91,24 @@ usepeerdns
     if not os.path.exists(vpn_config_file):
         with open(vpn_config_file, "w") as vpn_file:
             vpn_file.write(vpn_config_content)
-        print_log(f"✅ File konfigurasi VPN awal telah dibuat.")
-
-    # Mengedit file dengan data yang benar
+        print_log("✅ File konfigurasi VPN awal telah dibuat.")
+    
     replace_line_in_file(vpn_config_file, r'pty "pptp .*', f'pty "pptp {vpn_gateway} --nolaunchpppd --debug"')
     replace_line_in_file(vpn_config_file, r'^name .*', f'name {vpn_user}')
     replace_line_in_file(vpn_config_file, r'password .*', f'password {vpn_pass}')
-
-    # Memindahkan file ke lokasi sistem
+    
     run_command(f"sudo mv {vpn_config_file} /etc/ppp/peers/vpn")
     run_command("sudo chmod 600 /etc/ppp/peers/vpn")
     print_log("✅ File konfigurasi VPN telah dipindahkan dan diberikan izin aman.")
-
-    # Konfigurasi firewall
+    
     print_log("🔐 Mengonfigurasi UFW...")
     run_command("sudo ufw enable")
-
-    # Menambahkan VPN ke crontab agar otomatis tersambung saat boot
+    
     print_log("🕒 Menambahkan konfigurasi crontab untuk VPN...")
     cron_command = f'@reboot sudo pon vpn updetach >> {log_path}/logvpn.txt 2>&1'
     run_command(f'(crontab -l 2>/dev/null; echo "{cron_command}") | crontab -')
-
+    
+    configure_rc_local()
     print_log("✅ Konfigurasi VPN selesai. VPN akan terhubung otomatis saat boot.")
 
 def ensure_directory_exists(directory):
@@ -114,17 +121,13 @@ def ensure_directory_exists(directory):
 
 if __name__ == "__main__":
     print("\n🔧 **Setup VPN PPTP**\n")
-
-    # Input dari pengguna
     vpn_gateway = input("Masukkan IP Gateway VPN: ")
     vpn_user = input("Masukkan Username VPN: ")
     vpn_pass = input("Masukkan Password VPN: ")
     log_path = input("Masukkan path untuk log VPN: ")
-
+    
     ensure_directory_exists(log_path)
-
-    # Jalankan fungsi
     install_vpn_dependencies()
     configure_vpn(vpn_gateway, vpn_user, vpn_pass, log_path)
-
+    
     print("\n🎉 **Setup selesai! VPN telah dikonfigurasi dan akan tersambung otomatis saat boot.** 🎉")
