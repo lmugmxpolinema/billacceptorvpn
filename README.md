@@ -12,11 +12,9 @@ Script ini digunakan untuk **menginstal dan mengonfigurasi VPN PPTP secara otoma
 ## 🚀 Cara Clone Repositori
 
 ```bash
-git clone https://github.com/blablabla/vpn.git
+git clone https://github.com/lmugmxpolinema/billacceptorvpn
 cd vpn
 ```
-
-> Ganti `https://github.com/blablabla/vpn.git` dengan URL GitHub kamu yang sebenarnya.
 
 ---
 
